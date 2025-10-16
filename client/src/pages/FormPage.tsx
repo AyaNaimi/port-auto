@@ -1,10 +1,11 @@
 import { useLocation } from "wouter";
 import { PortfolioForm } from "@/components/PortfolioForm";
+import type { PortfolioData } from "@shared/schema";
 
 export default function FormPage() {
   const [, setLocation] = useLocation();
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: PortfolioData) => {
     localStorage.setItem("portfolioData", JSON.stringify(data));
     setLocation("/preview");
   };

@@ -9,13 +9,11 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-        <Link href="/">
-          <a className="flex items-center gap-2 hover-elevate rounded-md px-3 py-2" data-testid="link-home">
-            <Sparkles className="h-6 w-6 text-primary" />
-            <span className="bg-gradient-to-r from-[hsl(var(--gradient-from))] to-[hsl(var(--gradient-to))] bg-clip-text text-xl font-bold text-transparent font-heading">
-              Smart Portfolio
-            </span>
-          </a>
+        <Link href="/" className="flex items-center gap-2 hover-elevate rounded-md px-3 py-2" data-testid="link-home">
+          <Sparkles className="h-6 w-6 text-primary" />
+          <span className="bg-gradient-to-r from-[hsl(var(--gradient-from))] to-[hsl(var(--gradient-to))] bg-clip-text text-xl font-bold text-transparent font-heading">
+            Smart Portfolio
+          </span>
         </Link>
 
         <Button

@@ -3,15 +3,16 @@ import { useLocation } from "wouter";
 import { PortfolioPreview } from "@/components/PortfolioPreview";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import type { PortfolioData } from "@shared/schema";
 
 export default function PreviewPage() {
   const [, setLocation] = useLocation();
-  const [portfolioData, setPortfolioData] = useState<any>(null);
+  const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
 
   useEffect(() => {
     const data = localStorage.getItem("portfolioData");
     if (data) {
-      setPortfolioData(JSON.parse(data));
+      setPortfolioData(JSON.parse(data) as PortfolioData);
     } else {
       setLocation("/create");
     }
@@ -23,7 +24,7 @@ export default function PreviewPage() {
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <div className="max-w-4xl mx-auto mb-6">
+      <div className="max-w-6xl mx-auto mb-6">
         <Button
           variant="ghost"
           onClick={() => setLocation("/create")}
