@@ -1,0 +1,48 @@
+Crée une application web moderne appelée "Smart Portfolio" avec React + Tailwind CSS.
+
+Description du projet :
+C’est un générateur automatique de portfolios pour étudiants et freelances. 
+L’utilisateur remplit un formulaire simple, et l’application crée automatiquement un portfolio professionnel. 
+Le texte de présentation ("bio") est généré par l’IA via l’API Hugging Face.
+
+Structure attendue :
+1. Une page d’accueil avec un titre "Smart Portfolio" et un bouton "Créer mon portfolio".
+2. Une page de formulaire avec les champs suivants :
+   - Nom complet
+   - Spécialité / métier
+   - Brève description de ses compétences
+   - Liens : LinkedIn, GitHub, Email
+   - Champ libre "Mot-clé IA" (l’IA de Hugging Face utilisera ce mot-clé pour générer une bio professionnelle)
+   - Bouton “Générer ma bio avec IA”
+3. Lorsque l’utilisateur clique sur “Générer ma bio avec IA” :
+   - Appelle l’API Hugging Face (modèle texte : google/flan-t5-small)
+   - Exemple de prompt envoyé à l’API :
+     "Rédige une courte biographie professionnelle en français pour un {spécialité} nommé {nom}, avec un ton moderne et positif."
+4. Après la génération, affiche le texte de bio dans le formulaire.
+5. Bouton "Créer mon portfolio" → génère une page de portfolio automatique affichant :
+   - La photo (optionnelle)
+   - Le nom, spécialité
+   - La bio générée par IA
+   - Les liens LinkedIn, GitHub, Email
+   - Une section compétences sous forme de badges
+   - Un QR code (vers une URL simulée)
+6. Ajoute un bouton "Télécharger en PDF" sur la page du portfolio.
+7. Le design doit être moderne, clair et responsive :
+   - Utilise Tailwind CSS
+   - Palette de couleurs bleu/gris
+   - Typographie élégante (Inter ou Poppins)
+   - Boutons arrondis, cartes avec ombres légères
+
+Fonctionnalités techniques :
+- Le code doit être écrit en React avec Tailwind CSS.
+- Intègre un fetch() d’exemple vers l’API Hugging Face avec variable d’environnement pour la clé :
+  "https://api-inference.huggingface.co/models/google/flan-t5-small"
+- Stocke temporairement les données de l’utilisateur dans localStorage.
+- Organise le code en composants : Form, PortfolioCard, Header, Footer.
+
+Résultat attendu :
+Une application complète et exécutable avec :
+- Formulaire de saisie
+- Génération de texte IA (Hugging Face)
+- Portfolio dynamique
+- Design moderne et responsive
