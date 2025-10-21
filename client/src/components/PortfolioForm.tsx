@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { portfolioSchema, type PortfolioData, type Project } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Form,
   FormControl,
@@ -34,17 +36,60 @@ interface PortfolioFormProps {
 export function PortfolioForm({ onSubmit }: PortfolioFormProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [toolInput, setToolInput] = useState("");
+  const [modules, setModules] = useState<any[]>([]);
+  const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [userAccess, setUserAccess] = useState<Set<string>>(new Set());
+  const { user, appUser } = useAuth();
+
+  useEffect(() => {
+    fetchModules();
+    if (user) {
+      fetchUserAccess();
+    }
+  }, [user]);
+
+  const fetchModules = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('portfolio_modules')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setModules(data || []);
+    } catch (error) {
+      console.error('Error fetching modules:', error);
+    }
+  };
+
+  const fetchUserAccess = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_module_access')
+        .select('module_id')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      const accessSet = new Set(data?.map(a => a.module_id) || []);
+      setUserAccess(accessSet);
+    } catch (error) {
+      console.error('Error fetching user access:', error);
+    }
+  };
 
   const form = useForm<PortfolioData>({
     resolver: zodResolver(portfolioSchema),
     defaultValues: {
-      fullName: "",
+      fullName: appUser?.full_name || "",
       specialty: "",
       skills: "",
       profileImage: "",
       linkedin: "",
       github: "",
-      email: "",
+      email: appUser?.email || "",
       aiKeyword: "",
       bio: "",
       projects: [],
@@ -105,16 +150,78 @@ export function PortfolioForm({ onSubmit }: PortfolioFormProps) {
     });
   };
 
+  const hasAccess = (moduleId: string) => {
+    const module = modules.find(m => m.id === moduleId);
+    if (!module) return false;
+    return module.is_free || userAccess.has(moduleId);
+  };
+
   return (
-    <Card className="p-8 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold font-heading mb-2">
-          Créez votre portfolio
-        </h2>
-        <p className="text-muted-foreground">
-          Remplissez le formulaire ci-dessous pour générer votre portfolio professionnel
-        </p>
-      </div>
+    <div className="space-y-6">
+      <Card className="p-6 max-w-4xl mx-auto">
+        <div className="mb-6">
+          <h3 className="text-xl font-bold mb-2">Choisir un template</h3>
+          <p className="text-muted-foreground text-sm">
+            Sélectionnez le template pour votre portfolio
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {modules.map((module) => {
+            const canAccess = hasAccess(module.id);
+            return (
+              <Card
+                key={module.id}
+                className={`cursor-pointer transition-all hover:shadow-lg ${
+                  selectedModule === module.id ? 'ring-2 ring-primary' : ''
+                } ${!canAccess ? 'opacity-60' : ''}`}
+                onClick={() => canAccess && setSelectedModule(module.id)}
+              >
+                <CardContent className="p-4">
+                  {module.preview_image && (
+                    <img
+                      src={module.preview_image}
+                      alt={module.name}
+                      className="w-full h-32 object-cover rounded-md mb-3"
+                    />
+                  )}
+                  <h4 className="font-semibold mb-1">{module.name}</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {module.description}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <Badge variant={module.is_free ? 'default' : 'secondary'}>
+                      {module.is_free ? 'Gratuit' : `$${module.price}`}
+                    </Badge>
+                    {!canAccess && !module.is_free && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.location.href = `/payment/${module.id}`;
+                        }}
+                      >
+                        Acheter
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </Card>
+
+      {selectedModule && (
+        <Card className="p-8 max-w-4xl mx-auto">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold font-heading mb-2">
+              Créez votre portfolio
+            </h2>
+            <p className="text-muted-foreground">
+              Remplissez le formulaire ci-dessous pour générer votre portfolio professionnel
+            </p>
+          </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -642,5 +749,7 @@ export function PortfolioForm({ onSubmit }: PortfolioFormProps) {
         </form>
       </Form>
     </Card>
+      )}
+    </div>
   );
 }
